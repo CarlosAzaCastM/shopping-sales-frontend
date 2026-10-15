@@ -1,0 +1,21 @@
+# Dependencias y artefactos de compilación: NUNCA se suben al repo.
+# Cloudflare Pages ejecuta `pnpm install` y `pnpm build` por su cuenta, y si
+# `node_modules/` ya viene en el repositorio su paso de caché falla con
+# "cp: cannot overwrite non-directory ... with directory".
+node_modules/
+dist/
+.vite/
+
+# Variables de entorno locales
+.env
+.env.local
+.env.*.local
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+
+# Sistema / editor
+.DS_Store
+Thumbs.db
+*.log
