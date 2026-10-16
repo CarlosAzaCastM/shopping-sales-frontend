@@ -1,11 +1,14 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import AddSaleForm from './AddSaleForm'
+import DateRangeFilter from './DateRangeFilter'
 import SaleRow from './SaleRow'
 import SalesBreakdown from './SalesBreakdown'
 import SalesSummaryCards from './SalesSummaryCards'
 import { unitsFromSuggestions } from '../hooks/useProductSuggestions'
 import type { UseSales } from '../hooks/useSales'
+import { EMPTY_RANGE, isWithin } from '../lib/dateRange'
+import type { DateRange } from '../lib/dateRange'
 import { round2, toNumber } from '../lib/format'
 import type { ProductSuggestion, SaleCreate } from '../types'
 
@@ -38,6 +41,9 @@ export default function SalesView({
   } = sales
 
   const [search, setSearch] = useState('')
+  // Dos filtros independientes: uno para el listado y otro para el resumen.
+  const [listRange, setListRange] = useState<DateRange>(EMPTY_RANGE)
+  const [summaryRange, setSummaryRange] = useState<DateRange>(EMPTY_RANGE)
 
   const usedUnits = useMemo(() => unitsFromSuggestions(suggestions), [suggestions])
 
@@ -50,16 +56,28 @@ export default function SalesView({
     [addSale, onCatalogChange],
   )
 
+  /** Ventas del listado: filtro de fecha + búsqueda por nombre. */
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase()
-    if (!term) return rows
-    return rows.filter((sale) => sale.name.toLowerCase().includes(term))
-  }, [rows, search])
+    return rows.filter((sale) => {
+      if (!isWithin(sale.sold_at, listRange)) return false
+      if (term && !sale.name.toLowerCase().includes(term)) return false
+      return true
+    })
+  }, [rows, search, listRange])
+
+  /** Ventas del resumen: su propio filtro de fecha (sin la búsqueda). */
+  const summarySales = useMemo(
+    () => rows.filter((sale) => isWithin(sale.sold_at, summaryRange)),
+    [rows, summaryRange],
+  )
 
   const visibleProfit = useMemo(
     () => round2(visible.reduce((sum, sale) => sum + toNumber(sale.profit), 0)),
     [visible],
   )
+
+  const filtered = visible.length !== rows.length || search.trim() !== ''
 
   return (
     <div className="space-y-6">
@@ -85,13 +103,13 @@ export default function SalesView({
       )}
 
       <section className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur">
-        <div className="flex flex-col gap-3 border-b border-white/10 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 border-b border-white/10 p-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <h2 className="text-sm font-semibold text-slate-200">Ventas registradas</h2>
             <p className="text-xs text-slate-500">
-              {visible.length === rows.length
-                ? `${rows.length} ${rows.length === 1 ? 'venta' : 'ventas'}`
-                : `${visible.length} de ${rows.length} ventas`}
+              {filtered
+                ? `${visible.length} de ${rows.length} ventas`
+                : `${rows.length} ${rows.length === 1 ? 'venta' : 'ventas'}`}
               {visible.length > 0 && (
                 <>
                   {' · ganancia '}
@@ -106,22 +124,26 @@ export default function SalesView({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar venta…"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30 sm:w-52"
-            />
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              disabled={loading}
-              className="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
-            >
-              {loading ? 'Cargando…' : 'Refrescar'}
-            </button>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <DateRangeFilter value={listRange} onChange={setListRange} idPrefix="ventas" />
+
+            <div className="flex items-center gap-2">
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Buscar venta…"
+                className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30 sm:w-44"
+              />
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                disabled={loading}
+                className="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 disabled:opacity-50"
+              >
+                {loading ? 'Cargando…' : 'Refrescar'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -139,7 +161,7 @@ export default function SalesView({
             <p className="px-2 py-10 text-center text-sm text-slate-500">
               {rows.length === 0
                 ? 'Aún no has registrado ventas. Usa el formulario de arriba para añadir la primera.'
-                : 'Ninguna venta coincide con la búsqueda.'}
+                : 'Ninguna venta coincide con la fecha o la búsqueda.'}
             </p>
           ) : (
             <ul className="space-y-2">
@@ -158,7 +180,13 @@ export default function SalesView({
         </div>
       </section>
 
-      <SalesBreakdown sales={rows} stockAtCost={stockAtCost} />
+      <SalesBreakdown
+        sales={summarySales}
+        stockAtCost={stockAtCost}
+        totalSales={rows.length}
+        range={summaryRange}
+        onRangeChange={setSummaryRange}
+      />
     </div>
   )
 }
