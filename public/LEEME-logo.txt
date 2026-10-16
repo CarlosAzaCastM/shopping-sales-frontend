@@ -1,0 +1,32 @@
+# Logo de la marca
+
+El logo que se muestra en el encabezado es **`logo.webp`** de esta carpeta
+(500 x 500 px, fondo transparente). Se ve nitido sobre el tema oscuro porque el
+carrito ya viene en naranja y blanco.
+
+Archivos en esta carpeta:
+
+| Archivo | Uso |
+| --- | --- |
+| `logo.webp` | El que se muestra en el encabezado (fondo transparente). |
+| `logoFondo.jpg` | Version con fondo blanco, por si la necesitas para imprimir, favicon o redes. |
+
+## Cambiarlo
+
+Sustituye `logo.webp` por tu nueva imagen **manteniendo el mismo nombre** y no
+hay que tocar codigo. Otras opciones:
+
+- Otro nombre o formato -> cambia la ruta en `src/App.tsx`:
+  ```tsx
+  <Logo src="/logo-nuevo.png" size={58} label="C" />
+  ```
+- Otro tamano -> ajusta `size` (en pixeles).
+- Si el archivo no existe o falla al cargar, aparece un marcador con la inicial
+  sobre el degradado de la marca, asi el diseno nunca se ve roto.
+
+## Recomendaciones
+
+- **Cuadrada** (misma anchura y altura).
+- **512 x 512 px** o mas.
+- **Fondo transparente** (PNG o WebP) para que se integre con el tema oscuro.
+- Deja un margen pequeno alrededor del dibujo: el contenedor no recorta.
