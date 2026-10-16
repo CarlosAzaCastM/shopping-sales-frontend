@@ -1,21 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react'
 
+import UnitField from './UnitField'
 import { CURRENCY_SYMBOL, formatDate, formatMoney, toNumber } from '../lib/format'
-import type { Sale, SaleUpdate } from '../types'
+import { DEFAULT_UNIT, type Sale, type SaleUpdate } from '../types'
 
 interface Props {
   sale: Sale
   busy: boolean
+  /** Unidades ya usadas, para las sugerencias del editor. */
+  units?: string[]
   onSave: (id: number, payload: SaleUpdate) => Promise<void>
   onDelete: (id: number) => Promise<void>
 }
 
-export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
+export default function SaleRow({ sale, busy, units = [], onSave, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(sale.name)
   const [quantity, setQuantity] = useState(String(sale.quantity))
   const [cost, setCost] = useState(toNumber(sale.cost).toFixed(2))
   const [salePrice, setSalePrice] = useState(toNumber(sale.sale_price).toFixed(2))
+  const [unit, setUnit] = useState(sale.unit || DEFAULT_UNIT)
   const [soldAt, setSoldAt] = useState(sale.sold_at)
 
   useEffect(() => {
@@ -24,8 +28,9 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
     setQuantity(String(sale.quantity))
     setCost(toNumber(sale.cost).toFixed(2))
     setSalePrice(toNumber(sale.sale_price).toFixed(2))
+    setUnit(sale.unit || DEFAULT_UNIT)
     setSoldAt(sale.sold_at)
-  }, [editing, sale.name, sale.quantity, sale.cost, sale.sale_price, sale.sold_at])
+  }, [editing, sale.name, sale.quantity, sale.cost, sale.sale_price, sale.unit, sale.sold_at])
 
   const profit = toNumber(sale.profit)
   const margin = sale.margin_pct
@@ -37,26 +42,28 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
     setQuantity(String(sale.quantity))
     setCost(toNumber(sale.cost).toFixed(2))
     setSalePrice(toNumber(sale.sale_price).toFixed(2))
+    setUnit(sale.unit || DEFAULT_UNIT)
     setSoldAt(sale.sold_at)
   }
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const trimmed = name.trim()
-    const units = Number.parseInt(quantity, 10)
+    const parsedQuantity = Number.parseInt(quantity, 10)
     const unitCost = Number.parseFloat(cost)
     const unitPrice = Number.parseFloat(salePrice)
 
-    if (!trimmed || !Number.isFinite(units) || units < 1) return
+    if (!trimmed || !Number.isFinite(parsedQuantity) || parsedQuantity < 1) return
     if (!Number.isFinite(unitCost) || unitCost < 0) return
     if (!Number.isFinite(unitPrice) || unitPrice < 0) return
 
     try {
       await onSave(sale.id, {
         name: trimmed,
-        quantity: units,
+        quantity: parsedQuantity,
         cost: Math.round(unitCost * 100) / 100,
         sale_price: Math.round(unitPrice * 100) / 100,
+        unit: unit.trim() || DEFAULT_UNIT,
         sold_at: soldAt,
       })
       setEditing(false)
@@ -72,7 +79,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
   if (editing) {
     return (
       <li className="rounded-xl border border-brand-500/40 bg-brand-500/5 p-3">
-        <form onSubmit={handleSave} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <form onSubmit={handleSave} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-7">
           <label className="sm:col-span-2">
             <span className={labelClass}>Producto</span>
             <input
@@ -95,15 +102,16 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
               className={inputClass}
             />
           </label>
+          <UnitField value={unit} onChange={setUnit} extraUnits={units} label="Unidad" />
           <label>
-            <span className={labelClass}>Costo {CURRENCY_SYMBOL}</span>
+            <span className={labelClass}>Compra {CURRENCY_SYMBOL}</span>
             <input
               type="number"
               value={cost}
               onChange={(event) => setCost(event.target.value)}
               min={0}
               step="0.01"
-              className={inputClass}
+              className={`${inputClass} focus:border-sand-400/70 focus:ring-sand-400/30`}
             />
           </label>
           <label>
@@ -127,7 +135,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
             />
           </label>
 
-          <div className="flex gap-2 sm:col-span-2 lg:col-span-6">
+          <div className="flex gap-2 sm:col-span-2 lg:col-span-7">
             <button
               type="submit"
               className="rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-500"
@@ -167,7 +175,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
           <div className="flex flex-wrap items-baseline gap-x-2">
             <p className="truncate text-sm font-semibold text-slate-100">{sale.name}</p>
             <span className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-slate-400">
-              {sale.quantity} pza{sale.quantity === 1 ? '' : 's'}
+              {sale.quantity} {sale.unit || DEFAULT_UNIT}
             </span>
             <span className="text-[11px] text-slate-500">{formatDate(sale.sold_at)}</span>
           </div>
@@ -175,15 +183,15 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
           {/* Per-unit breakdown, then the totals that matter. */}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
             <span className="text-slate-500">
-              Me costó <span className="tabular-nums text-sand-300">{formatMoney(sale.cost)}</span>
+              Precio compra{' '}
+              <span className="tabular-nums text-sand-300">{formatMoney(sale.cost)}</span>
               <span className="text-slate-600"> c/u</span>
             </span>
             <span className="text-slate-500">
               Vendido en{' '}
               <span className="tabular-nums text-slate-200">{formatMoney(sale.sale_price)}</span>
               <span className="text-slate-600"> c/u</span>
-            </span>
-            <span className="text-slate-500">
+            </span>            <span className="text-slate-500">
               Total{' '}
               <span className="tabular-nums text-brand-300">
                 {formatMoney(sale.total_revenue)}

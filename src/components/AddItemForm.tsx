@@ -1,21 +1,26 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
-import { CURRENCY_SYMBOL, formatMoney } from '../lib/format'
-import type { ItemCreate } from '../types'
+import ProductNameField from './ProductNameField'
+import UnitField from './UnitField'
+import { CURRENCY_SYMBOL, formatMoney, round2 } from '../lib/format'
+import { unitsFromSuggestions } from '../hooks/useProductSuggestions'
+import { DEFAULT_UNIT, type ItemCreate, type ProductSuggestion } from '../types'
 
 interface Props {
   onAdd: (payload: ItemCreate) => Promise<void>
+  suggestions: ProductSuggestion[]
 }
 
-const EMPTY = { name: '', quantity: '1', price: '', cost: '' }
+const EMPTY = { name: '', quantity: '1', price: '', unit: DEFAULT_UNIT }
 
-export default function AddItemForm({ onAdd }: Props) {
+export default function AddItemForm({ onAdd, suggestions }: Props) {
   const [name, setName] = useState(EMPTY.name)
   const [quantity, setQuantity] = useState(EMPTY.quantity)
   const [price, setPrice] = useState(EMPTY.price)
-  const [cost, setCost] = useState(EMPTY.cost)
+  const [unit, setUnit] = useState(EMPTY.unit)
   const [submitting, setSubmitting] = useState(false)
   const [fieldError, setFieldError] = useState<string | null>(null)
+  const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
     if (!fieldError) return
@@ -23,17 +28,22 @@ export default function AddItemForm({ onAdd }: Props) {
     return () => window.clearTimeout(timer)
   }, [fieldError])
 
-  const units = Number.parseInt(quantity, 10) || 0
+  // Unidades ya usadas en el historial, para ofrecerlas primero.
+  const usedUnits = useMemo(() => unitsFromSuggestions(suggestions), [suggestions])
+
+  const unitsTotal = Number.parseInt(quantity, 10) || 0
   const unitPrice = Number.parseFloat(price) || 0
-  const unitCost = Number.parseFloat(cost) || 0
+  const lineTotal = round2(unitPrice * unitsTotal)
 
-  const preview = useMemo(() => {
-    const revenue = unitPrice * units
-    const spend = unitCost * units
-    return { revenue, spend, profit: revenue - spend }
-  }, [unitPrice, unitCost, units])
-
-  const hasPreview = units > 0 && (unitPrice > 0 || unitCost > 0)
+  /** Al elegir un producto conocido, prellenamos unidad y precio de compra. */
+  function handlePick(suggestion: ProductSuggestion) {
+    setUnit(suggestion.unit || DEFAULT_UNIT)
+    const lastPrice = Number.parseFloat(String(suggestion.last_price ?? '0'))
+    if (lastPrice > 0) {
+      setPrice(lastPrice.toFixed(2))
+      setPrefilled(true)
+    }
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -42,12 +52,16 @@ export default function AddItemForm({ onAdd }: Props) {
       setFieldError('Escribe el nombre del producto.')
       return
     }
-    if (units < 1) {
+    if (unitsTotal < 1) {
       setFieldError('La cantidad debe ser un número mayor o igual a 1.')
       return
     }
-    if (unitPrice < 0 || unitCost < 0) {
-      setFieldError('El precio y el costo deben ser números positivos.')
+    if (unitPrice < 0) {
+      setFieldError('El precio de compra debe ser un número positivo.')
+      return
+    }
+    if (!unit.trim()) {
+      setFieldError('Indica la unidad (pza, kg, L…).')
       return
     }
 
@@ -55,14 +69,15 @@ export default function AddItemForm({ onAdd }: Props) {
     try {
       await onAdd({
         name: trimmed,
-        quantity: units,
-        price: Math.round(unitPrice * 100) / 100,
-        cost: Math.round(unitCost * 100) / 100,
+        quantity: unitsTotal,
+        price: round2(unitPrice),
+        unit: unit.trim(),
       })
       setName(EMPTY.name)
       setQuantity(EMPTY.quantity)
       setPrice(EMPTY.price)
-      setCost(EMPTY.cost)
+      setUnit(EMPTY.unit)
+      setPrefilled(false)
       setFieldError(null)
     } catch {
       // The parent hook already surfaces the API error banner.
@@ -71,7 +86,7 @@ export default function AddItemForm({ onAdd }: Props) {
     }
   }
 
-  const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-400'
+  const labelClass = 'mb-1.5 block text-xs font-medium tracking-wide text-slate-400 uppercase'
   const inputClass =
     'w-full rounded-xl border border-white/10 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30'
 
@@ -80,19 +95,14 @@ export default function AddItemForm({ onAdd }: Props) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-slate-950/30 backdrop-blur sm:p-5"
     >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <label className="sm:col-span-2 lg:col-span-2">
-          <span className={labelClass}>Producto</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Leche, pan, manzanas…"
-            maxLength={255}
-            autoComplete="off"
-            className={inputClass}
-          />
-        </label>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <ProductNameField
+          value={name}
+          onChange={setName}
+          onPick={handlePick}
+          suggestions={suggestions}
+          className="sm:col-span-2 lg:col-span-1"
+        />
 
         <label>
           <span className={labelClass}>Cantidad</span>
@@ -107,26 +117,17 @@ export default function AddItemForm({ onAdd }: Props) {
           />
         </label>
 
+        <UnitField value={unit} onChange={setUnit} extraUnits={usedUnits} />
+
         <label>
-          <span className={labelClass}>Precio venta ({CURRENCY_SYMBOL})</span>
+          <span className={labelClass}>Precio compra ({CURRENCY_SYMBOL})</span>
           <input
             type="number"
             value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            min={0}
-            step="0.01"
-            inputMode="decimal"
-            placeholder="0.00"
-            className={inputClass}
-          />
-        </label>
-
-        <label>
-          <span className={labelClass}>Me costó ({CURRENCY_SYMBOL})</span>
-          <input
-            type="number"
-            value={cost}
-            onChange={(event) => setCost(event.target.value)}
+            onChange={(event) => {
+              setPrice(event.target.value)
+              setPrefilled(false)
+            }}
             min={0}
             step="0.01"
             inputMode="decimal"
@@ -137,34 +138,27 @@ export default function AddItemForm({ onAdd }: Props) {
       </div>
 
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        {hasPreview ? (
+        {unitsTotal > 0 && unitPrice > 0 ? (
           <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
             <div className="flex items-center gap-1.5">
-              <dt className="text-slate-500">Compra</dt>
-              <dd className="font-semibold tabular-nums text-sand-300">
-                {formatMoney(preview.spend)}
-              </dd>
+              <dt className="text-slate-500">Total de la compra</dt>
+              <dd className="font-bold tabular-nums text-brand-300">{formatMoney(lineTotal)}</dd>
             </div>
             <div className="flex items-center gap-1.5">
-              <dt className="text-slate-500">Venta</dt>
-              <dd className="font-semibold tabular-nums text-slate-200">
-                {formatMoney(preview.revenue)}
-              </dd>
+              <dt className="text-slate-500">
+                {unitsTotal} {unit} ×
+              </dt>
+              <dd className="font-semibold tabular-nums text-sand-300">{formatMoney(unitPrice)}</dd>
             </div>
-            <div className="flex items-center gap-1.5">
-              <dt className="text-slate-500">Ganancia si lo vendes</dt>
-              <dd
-                className={`font-semibold tabular-nums ${
-                  preview.profit < 0 ? 'text-danger-300' : 'text-accent-300'
-                }`}
-              >
-                {formatMoney(preview.profit)}
-              </dd>
-            </div>
+            {prefilled && (
+              <span className="rounded bg-accent-500/15 px-1.5 py-0.5 text-accent-300">
+                unidad y precio recuperados del historial
+              </span>
+            )}
           </dl>
         ) : (
           <p className="text-xs text-slate-500">
-            Opcional: pon lo que te costó y el precio de venta para ver tu ganancia.
+            Escribe un producto ya usado y se rellenan su unidad y su último precio de compra.
           </p>
         )}
 

@@ -3,6 +3,7 @@ import type {
   Item,
   ItemCreate,
   ItemUpdate,
+  ProductSuggestion,
   Sale,
   SaleCreate,
   SaleUpdate,
@@ -36,7 +37,7 @@ export class ApiError extends Error {
 /** Append only meaningful query params to a path. */
 function withQuery(
   path: string,
-  params?: Record<string, string | boolean | undefined>,
+  params?: Record<string, string | number | boolean | undefined>,
 ): string {
   const search = new URLSearchParams()
   for (const [key, value] of Object.entries(params ?? {})) {
@@ -153,4 +154,15 @@ export const api = {
 
   deleteSale: (id: number) =>
     request<void>(`/api/sales/${id}`, { method: 'DELETE' }),
+
+  // --- catalog (autocompletado) --------------------------------------------
+
+  /** Nombres de producto ya usados, de la lista de compras y de las ventas. */
+  productNames: (options?: { search?: string; limit?: number }) =>
+    request<ProductSuggestion[]>(
+      withQuery('/api/product-names', {
+        search: options?.search,
+        limit: options?.limit,
+      }),
+    ),
 }

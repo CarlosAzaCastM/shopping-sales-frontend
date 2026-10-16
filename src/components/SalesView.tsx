@@ -1,19 +1,29 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import AddSaleForm from './AddSaleForm'
 import SaleRow from './SaleRow'
 import SalesBreakdown from './SalesBreakdown'
 import SalesSummaryCards from './SalesSummaryCards'
+import { unitsFromSuggestions } from '../hooks/useProductSuggestions'
 import type { UseSales } from '../hooks/useSales'
 import { round2, toNumber } from '../lib/format'
+import type { ProductSuggestion, SaleCreate } from '../types'
 
 interface Props {
   sales: UseSales
   /** Units × cost for the items sitting on the shopping list. */
   stockAtCost: number
+  suggestions: ProductSuggestion[]
+  /** Avisa a App para que recargue el catálogo del autocompletado. */
+  onCatalogChange: () => Promise<void>
 }
 
-export default function SalesView({ sales, stockAtCost }: Props) {
+export default function SalesView({
+  sales,
+  stockAtCost,
+  suggestions,
+  onCatalogChange,
+}: Props) {
   const {
     sales: rows,
     totals,
@@ -28,6 +38,17 @@ export default function SalesView({ sales, stockAtCost }: Props) {
   } = sales
 
   const [search, setSearch] = useState('')
+
+  const usedUnits = useMemo(() => unitsFromSuggestions(suggestions), [suggestions])
+
+  // Al registrar una venta, ese producto entra al catálogo del autocompletado.
+  const handleAdd = useCallback(
+    async (payload: SaleCreate) => {
+      await addSale(payload)
+      void onCatalogChange()
+    },
+    [addSale, onCatalogChange],
+  )
 
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase()
@@ -44,7 +65,7 @@ export default function SalesView({ sales, stockAtCost }: Props) {
     <div className="space-y-6">
       <SalesSummaryCards totals={totals} />
 
-      <AddSaleForm onAdd={addSale} />
+      <AddSaleForm onAdd={handleAdd} suggestions={suggestions} />
 
       {error && (
         <div
@@ -127,6 +148,7 @@ export default function SalesView({ sales, stockAtCost }: Props) {
                   key={sale.id}
                   sale={sale}
                   busy={busyIds.has(sale.id)}
+                  units={usedUnits}
                   onSave={editSale}
                   onDelete={removeSale}
                 />

@@ -1,22 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react'
 
+import UnitField from './UnitField'
 import { formatDate, formatMoney, toNumber } from '../lib/format'
-import type { Item, ItemUpdate } from '../types'
+import { DEFAULT_UNIT, type Item, type ItemUpdate } from '../types'
 
 interface Props {
   item: Item
   busy: boolean
+  /** Unidades ya usadas, para las sugerencias del editor. */
+  units?: string[]
   onToggle: (item: Item) => Promise<void>
   onSave: (id: number, payload: ItemUpdate) => Promise<void>
   onDelete: (id: number) => Promise<void>
 }
 
-export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Props) {
+export default function ItemRow({ item, busy, units = [], onToggle, onSave, onDelete }: Props) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(item.name)
   const [quantity, setQuantity] = useState(String(item.quantity))
   const [price, setPrice] = useState(toNumber(item.price).toFixed(2))
-  const [cost, setCost] = useState(toNumber(item.cost).toFixed(2))
+  const [unit, setUnit] = useState(item.unit || DEFAULT_UNIT)
 
   // Keep the draft in sync when the row changes from outside (e.g. optimistic
   // rollback after a failed request).
@@ -25,8 +28,8 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
     setName(item.name)
     setQuantity(String(item.quantity))
     setPrice(toNumber(item.price).toFixed(2))
-    setCost(toNumber(item.cost).toFixed(2))
-  }, [editing, item.name, item.quantity, item.price, item.cost])
+    setUnit(item.unit || DEFAULT_UNIT)
+  }, [editing, item.name, item.quantity, item.price, item.unit])
 
   const lineTotal = toNumber(item.price) * (item.quantity || 0)
 
@@ -35,7 +38,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
     setName(item.name)
     setQuantity(String(item.quantity))
     setPrice(toNumber(item.price).toFixed(2))
-    setCost(toNumber(item.cost).toFixed(2))
+    setUnit(item.unit || DEFAULT_UNIT)
   }
 
   async function handleSave(event: FormEvent<HTMLFormElement>) {
@@ -43,18 +46,16 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
     const trimmed = name.trim()
     const parsedQuantity = Number.parseInt(quantity, 10)
     const parsedPrice = Number.parseFloat(price)
-    const parsedCost = cost.trim() === '' ? 0 : Number.parseFloat(cost)
 
     if (!trimmed || !Number.isFinite(parsedQuantity) || parsedQuantity < 1) return
     if (!Number.isFinite(parsedPrice) || parsedPrice < 0) return
-    if (!Number.isFinite(parsedCost) || parsedCost < 0) return
 
     try {
       await onSave(item.id, {
         name: trimmed,
         quantity: parsedQuantity,
         price: Math.round(parsedPrice * 100) / 100,
-        cost: Math.round(parsedCost * 100) / 100,
+        unit: unit.trim() || DEFAULT_UNIT,
       })
       setEditing(false)
     } catch {
@@ -101,9 +102,15 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30"
             />
           </label>
-          <label className="sm:w-28">
-            <span className="mb-1 block text-[11px] uppercase tracking-wide text-slate-400">
-              Precio venta
+          <label className="sm:w-24">
+            <span className="mb-1 block text-[11px] tracking-wide text-slate-400 uppercase">
+              Unidad
+            </span>
+            <UnitField value={unit} onChange={setUnit} extraUnits={units} label={null} />
+          </label>
+          <label className="sm:w-32">
+            <span className="mb-1 block text-[11px] tracking-wide text-slate-400 uppercase">
+              Precio compra
             </span>
             <input
               type="number"
@@ -111,21 +118,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               onChange={(event) => setPrice(event.target.value)}
               min={0}
               step="0.01"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30"
-            />
-          </label>
-          <label className="sm:w-28">
-            <span className="mb-1 block text-[11px] uppercase tracking-wide text-slate-400">
-              Me costó
-            </span>
-            <input
-              type="number"
-              value={cost}
-              onChange={(event) => setCost(event.target.value)}
-              min={0}
-              step="0.01"
-              placeholder="0.00"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sand-400/70 focus:ring-2 focus:ring-sand-400/30"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sand-400/70 focus:ring-2 focus:ring-sand-400/30"
             />
           </label>
           <div className="flex gap-2">
@@ -192,13 +185,8 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               {item.name}
             </p>
             <p className="mt-0.5 text-xs text-slate-500">
-              {item.quantity} × {formatMoney(item.price)}
-              {toNumber(item.cost) > 0 && (
-                <>
-                  {' · costo '}
-                  <span className="text-sand-300/80">{formatMoney(item.cost)}</span>
-                </>
-              )}
+              {item.quantity} {item.unit || DEFAULT_UNIT} ×{' '}
+              <span className="text-sand-300/80">{formatMoney(item.price)}</span>
               {' · '}
               {formatDate(item.created_at)}
             </p>

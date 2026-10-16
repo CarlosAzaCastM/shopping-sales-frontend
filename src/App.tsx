@@ -6,6 +6,7 @@ import ShoppingListView from "./components/ShoppingListView";
 import TabNav, { tabFromHash, type TabId } from "./components/TabNav";
 import { useSales } from "./hooks/useSales";
 import { useShoppingList } from "./hooks/useShoppingList";
+import { useProductSuggestions } from "./hooks/useProductSuggestions";
 import { API_BASE_URL, api } from "./lib/api";
 import { CURRENCY_SYMBOL } from "./lib/format";
 
@@ -14,6 +15,9 @@ type DbStatus = "checking" | "online" | "offline";
 export default function App() {
   const shopping = useShoppingList();
   const sales = useSales();
+  // Catálogo compartido: un producto añadido en la lista aparece de inmediato
+  // como sugerencia en ventas, y al revés.
+  const suggestions = useProductSuggestions();
 
   const [tab, setTab] = useState<TabId>(() => tabFromHash());
   const [dbStatus, setDbStatus] = useState<DbStatus>("checking");
@@ -115,9 +119,18 @@ export default function App() {
 
         <main className="mt-6">
           {tab === "lista" ? (
-            <ShoppingListView shopping={shopping} />
+            <ShoppingListView
+              shopping={shopping}
+              suggestions={suggestions.suggestions}
+              onCatalogChange={suggestions.refresh}
+            />
           ) : (
-            <SalesView sales={sales} stockAtCost={shopping.totals.totalCost} />
+            <SalesView
+              sales={sales}
+              stockAtCost={shopping.totals.totalCost}
+              suggestions={suggestions.suggestions}
+              onCatalogChange={suggestions.refresh}
+            />
           )}
         </main>
 

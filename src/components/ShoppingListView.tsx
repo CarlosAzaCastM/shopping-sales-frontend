@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 import AddItemForm from './AddItemForm'
 import ItemRow from './ItemRow'
 import SummaryCards from './SummaryCards'
+import { unitsFromSuggestions } from '../hooks/useProductSuggestions'
 import type { UseShoppingList } from '../hooks/useShoppingList'
+import type { ItemCreate, ProductSuggestion } from '../types'
 
 type Filter = 'all' | 'pending' | 'completed'
 
@@ -15,9 +17,12 @@ const FILTERS: { id: Filter; label: string }[] = [
 
 interface Props {
   shopping: UseShoppingList
+  suggestions: ProductSuggestion[]
+  /** Avisa a App para que recargue el catálogo del autocompletado. */
+  onCatalogChange: () => Promise<void>
 }
 
-export default function ShoppingListView({ shopping }: Props) {
+export default function ShoppingListView({ shopping, suggestions, onCatalogChange }: Props) {
   const {
     items,
     loading,
@@ -38,6 +43,17 @@ export default function ShoppingListView({ shopping }: Props) {
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
 
+  const usedUnits = useMemo(() => unitsFromSuggestions(suggestions), [suggestions])
+
+  // Al añadir, el nombre nuevo entra al catálogo del autocompletado.
+  const handleAdd = useCallback(
+    async (payload: ItemCreate) => {
+      await addItem(payload)
+      void onCatalogChange()
+    },
+    [addItem, onCatalogChange],
+  )
+
   const visible = useMemo(() => {
     const term = search.trim().toLowerCase()
     return items.filter((item) => {
@@ -52,7 +68,7 @@ export default function ShoppingListView({ shopping }: Props) {
     <div className="space-y-6" id="panel-lista" role="tabpanel" aria-labelledby="tab-lista">
       <SummaryCards totals={totals} pendingCount={pendingCount} completedCount={completedCount} />
 
-      <AddItemForm onAdd={addItem} />
+      <AddItemForm onAdd={handleAdd} suggestions={suggestions} />
 
       {error && (
         <div
@@ -141,6 +157,7 @@ export default function ShoppingListView({ shopping }: Props) {
                   key={item.id}
                   item={item}
                   busy={busyIds.has(item.id)}
+                  units={usedUnits}
                   onToggle={toggleItem}
                   onSave={editItem}
                   onDelete={removeItem}

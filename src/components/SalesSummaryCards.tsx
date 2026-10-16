@@ -41,7 +41,7 @@ export default function SalesSummaryCards({ totals }: Props) {
         accent="text-brand-300"
       />
       <Card
-        label="Me costó"
+        label="Precio de compra"
         value={formatMoney(totals.totalCost)}
         hint="Costo total de lo vendido"
         accent="text-sand-300"

@@ -1,22 +1,35 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
+import ProductNameField from './ProductNameField'
+import UnitField from './UnitField'
 import { CURRENCY_SYMBOL, formatMoney, marginPercent, todayIso } from '../lib/format'
-import type { SaleCreate } from '../types'
+import { unitsFromSuggestions } from '../hooks/useProductSuggestions'
+import { DEFAULT_UNIT, type ProductSuggestion, type SaleCreate } from '../types'
 
 interface Props {
   onAdd: (payload: SaleCreate) => Promise<void>
+  suggestions: ProductSuggestion[]
 }
 
-const EMPTY = { name: '', quantity: '1', cost: '', salePrice: '', soldAt: todayIso() }
+const EMPTY = {
+  name: '',
+  quantity: '1',
+  cost: '',
+  salePrice: '',
+  unit: DEFAULT_UNIT,
+  soldAt: todayIso(),
+}
 
-export default function AddSaleForm({ onAdd }: Props) {
+export default function AddSaleForm({ onAdd, suggestions }: Props) {
   const [name, setName] = useState(EMPTY.name)
   const [quantity, setQuantity] = useState(EMPTY.quantity)
   const [cost, setCost] = useState(EMPTY.cost)
   const [salePrice, setSalePrice] = useState(EMPTY.salePrice)
+  const [unit, setUnit] = useState(EMPTY.unit)
   const [soldAt, setSoldAt] = useState(EMPTY.soldAt)
   const [submitting, setSubmitting] = useState(false)
   const [fieldError, setFieldError] = useState<string | null>(null)
+  const [prefilled, setPrefilled] = useState(false)
 
   useEffect(() => {
     if (!fieldError) return
@@ -24,9 +37,21 @@ export default function AddSaleForm({ onAdd }: Props) {
     return () => window.clearTimeout(timer)
   }, [fieldError])
 
+  const usedUnits = useMemo(() => unitsFromSuggestions(suggestions), [suggestions])
+
   const units = Number.parseInt(quantity, 10) || 0
   const unitCost = Number.parseFloat(cost) || 0
   const unitPrice = Number.parseFloat(salePrice) || 0
+
+  /** Al elegir un producto conocido, prellenamos unidad y precio de compra. */
+  function handlePick(suggestion: ProductSuggestion) {
+    setUnit(suggestion.unit || DEFAULT_UNIT)
+    const lastCost = Number.parseFloat(String(suggestion.last_price ?? '0'))
+    if (lastCost > 0) {
+      setCost(lastCost.toFixed(2))
+      setPrefilled(true)
+    }
+  }
 
   // Live preview: what the sale will leave you, before you even save it.
   const preview = useMemo(() => {
@@ -62,6 +87,10 @@ export default function AddSaleForm({ onAdd }: Props) {
       setFieldError('Indica la fecha de la venta.')
       return
     }
+    if (!unit.trim()) {
+      setFieldError('Indica la unidad (pza, kg, L…).')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -70,13 +99,16 @@ export default function AddSaleForm({ onAdd }: Props) {
         quantity: units,
         cost: Math.round(unitCost * 100) / 100,
         sale_price: Math.round(unitPrice * 100) / 100,
+        unit: unit.trim(),
         sold_at: soldAt,
       })
       setName(EMPTY.name)
       setQuantity(EMPTY.quantity)
       setCost(EMPTY.cost)
       setSalePrice(EMPTY.salePrice)
+      setUnit(EMPTY.unit)
       setSoldAt(todayIso())
+      setPrefilled(false)
       setFieldError(null)
     } catch {
       // The hook shows the API error banner.
@@ -99,19 +131,15 @@ export default function AddSaleForm({ onAdd }: Props) {
         Registrar una venta
       </h2>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <label className="sm:col-span-2 lg:col-span-1">
-          <span className={labelClass}>Producto</span>
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Camiseta, gorra…"
-            maxLength={255}
-            autoComplete="off"
-            className={inputClass}
-          />
-        </label>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ProductNameField
+          value={name}
+          onChange={setName}
+          onPick={handlePick}
+          suggestions={suggestions}
+          placeholder="Camiseta, gorra…"
+          className="sm:col-span-2 lg:col-span-1"
+        />
 
         <label>
           <span className={labelClass}>Cantidad</span>
@@ -126,17 +154,22 @@ export default function AddSaleForm({ onAdd }: Props) {
           />
         </label>
 
+        <UnitField value={unit} onChange={setUnit} extraUnits={usedUnits} />
+
         <label>
-          <span className={labelClass}>Me costó ({CURRENCY_SYMBOL})</span>
+          <span className={labelClass}>Precio compra ({CURRENCY_SYMBOL})</span>
           <input
             type="number"
             value={cost}
-            onChange={(event) => setCost(event.target.value)}
+            onChange={(event) => {
+              setCost(event.target.value)
+              setPrefilled(false)
+            }}
             min={0}
             step="0.01"
             inputMode="decimal"
             placeholder="0.00"
-            className={inputClass}
+            className={`${inputClass} focus:border-sand-400/70 focus:ring-sand-400/30`}
           />
         </label>
 
@@ -200,10 +233,16 @@ export default function AddSaleForm({ onAdd }: Props) {
                 {preview.margin}%
               </dd>
             </div>
+            {prefilled && (
+              <span className="rounded bg-accent-500/15 px-1.5 py-0.5 text-accent-300">
+                unidad y costo recuperados del historial
+              </span>
+            )}
           </dl>
         ) : (
           <p className="text-xs text-slate-500">
-            Al escribir el costo y el precio verás aquí la ganancia y el margen.
+            Escribe un producto ya usado y se rellenan su unidad y su costo. Al poner el precio de
+            venta verás la ganancia y el margen.
           </p>
         )}
 

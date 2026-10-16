@@ -11,7 +11,7 @@ export interface Totals {
   pending: number
   /** Sum of price × quantity for completed items only. */
   completed: number
-  /** Sum of cost × quantity for every item (what the stock cost you). */
+  /** Lo que costó el inventario de la lista (mismo valor que `grand`). */
   totalCost: number
   /** Number of units across all items. */
   units: number
@@ -156,7 +156,9 @@ export function useShoppingList(): UseShoppingList {
       const quantity = item.quantity || 0
       const line = toNumber(item.price) * quantity
       grand += line
-      totalCost += toNumber(item.cost) * quantity
+      // En la lista de compras `price` ES el precio de compra, así que el valor
+      // del inventario coincide con el total estimado.
+      totalCost += line
       units += quantity
       if (item.is_completed) completed += line
       else pending += line
