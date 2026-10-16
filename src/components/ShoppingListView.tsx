@@ -57,14 +57,14 @@ export default function ShoppingListView({ shopping }: Props) {
       {error && (
         <div
           role="alert"
-          className="flex items-start justify-between gap-3 rounded-xl border border-rose-400/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+          className="flex items-start justify-between gap-3 rounded-xl border border-danger-400/30 bg-danger-500/10 px-4 py-3 text-sm text-danger-200"
         >
           <span>{error}</span>
           <button
             type="button"
             onClick={dismissError}
             aria-label="Cerrar aviso"
-            className="shrink-0 rounded px-1 text-rose-300 transition hover:text-rose-100"
+            className="shrink-0 rounded px-1 text-danger-300 transition hover:text-danger-100"
           >
             ✕
           </button>
@@ -81,7 +81,7 @@ export default function ShoppingListView({ shopping }: Props) {
                 onClick={() => setFilter(entry.id)}
                 className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                   filter === entry.id
-                    ? 'bg-sky-500 text-white shadow'
+                    ? 'bg-brand-500 text-white shadow'
                     : 'text-slate-400 hover:text-slate-100'
                 }`}
               >
@@ -96,7 +96,7 @@ export default function ShoppingListView({ shopping }: Props) {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar producto…"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/30 sm:w-44"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/60 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30 sm:w-44"
             />
             <button
               type="button"
@@ -110,7 +110,7 @@ export default function ShoppingListView({ shopping }: Props) {
               <button
                 type="button"
                 onClick={() => void clearCompleted()}
-                className="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-rose-400/40 hover:bg-rose-500/10 hover:text-rose-200"
+                className="shrink-0 rounded-lg border border-white/10 px-3 py-2 text-xs font-medium text-slate-300 transition hover:border-danger-400/50 hover:bg-danger-500/10 hover:text-danger-200"
               >
                 Limpiar
               </button>

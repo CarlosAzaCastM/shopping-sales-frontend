@@ -85,7 +85,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               onChange={(event) => setName(event.target.value)}
               maxLength={255}
               autoFocus
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/30"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30"
             />
           </label>
           <label className="sm:w-20">
@@ -98,7 +98,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               onChange={(event) => setQuantity(event.target.value)}
               min={1}
               step={1}
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/30"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30"
             />
           </label>
           <label className="sm:w-28">
@@ -111,7 +111,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               onChange={(event) => setPrice(event.target.value)}
               min={0}
               step="0.01"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/30"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30"
             />
           </label>
           <label className="sm:w-28">
@@ -125,13 +125,13 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               min={0}
               step="0.01"
               placeholder="0.00"
-              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-amber-400/70 focus:ring-2 focus:ring-amber-400/30"
+              className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 outline-none focus:border-sand-400/70 focus:ring-2 focus:ring-sand-400/30"
             />
           </label>
           <div className="flex gap-2">
             <button
               type="submit"
-              className="rounded-lg bg-emerald-500 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400"
+              className="rounded-lg bg-accent-600 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-500"
             >
               Guardar
             </button>
@@ -159,8 +159,8 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
             }
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
               item.is_completed
-                ? 'border-emerald-400/40 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25'
-                : 'border-white/15 bg-white/5 text-slate-300 hover:border-emerald-400/50 hover:bg-emerald-500/15 hover:text-emerald-200'
+                ? 'border-accent-400/40 bg-accent-500/15 text-accent-300 hover:bg-accent-500/25'
+                : 'border-white/15 bg-white/5 text-slate-300 hover:border-accent-400/60 hover:bg-accent-500/15 hover:text-accent-200'
             }`}
           >
             {item.is_completed ? (
@@ -196,7 +196,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               {toNumber(item.cost) > 0 && (
                 <>
                   {' · costo '}
-                  <span className="text-amber-300/80">{formatMoney(item.cost)}</span>
+                  <span className="text-sand-300/80">{formatMoney(item.cost)}</span>
                 </>
               )}
               {' · '}
@@ -206,7 +206,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
 
           <span
             className={`hidden shrink-0 text-sm font-semibold tabular-nums sm:block ${
-              item.is_completed ? 'text-slate-500' : 'text-sky-300'
+              item.is_completed ? 'text-slate-500' : 'text-brand-300'
             }`}
           >
             {formatMoney(lineTotal)}
@@ -234,7 +234,7 @@ export default function ItemRow({ item, busy, onToggle, onSave, onDelete }: Prop
               onClick={() => void onDelete(item.id)}
               disabled={busy}
               aria-label={`Eliminar ${item.name}`}
-              className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300 disabled:opacity-50"
+              className="rounded-lg p-2 text-slate-400 transition hover:bg-danger-500/15 hover:text-danger-300 disabled:opacity-50"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />

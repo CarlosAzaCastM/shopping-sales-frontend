@@ -34,13 +34,13 @@ export default function SalesBreakdown({ sales, stockAtCost }: Props) {
 
         <div className="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
           <dt className="text-slate-400">Valor del inventario en la lista</dt>
-          <dd className="font-semibold tabular-nums text-amber-300">{formatMoney(stockAtCost)}</dd>
+          <dd className="font-semibold tabular-nums text-sand-300">{formatMoney(stockAtCost)}</dd>
         </div>
 
         {stats.best && (
           <div className="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
             <dt className="text-slate-400">Venta más rentable</dt>
-            <dd className="text-right font-semibold text-emerald-300">
+            <dd className="text-right font-semibold text-accent-300">
               {stats.best.name}
               <span className="ml-2 tabular-nums">{formatMoney(stats.best.profit)}</span>
               <span className="ml-2 text-xs font-normal text-slate-500">
@@ -53,7 +53,7 @@ export default function SalesBreakdown({ sales, stockAtCost }: Props) {
         {stats.worst && Number(stats.worst.profit) < 0 && (
           <div className="flex items-baseline justify-between gap-3 border-b border-white/5 pb-2">
             <dt className="text-slate-400">Venta con pérdida</dt>
-            <dd className="text-right font-semibold text-rose-300">
+            <dd className="text-right font-semibold text-danger-300">
               {stats.worst.name}
               <span className="ml-2 tabular-nums">{formatMoney(stats.worst.profit)}</span>
             </dd>

@@ -67,11 +67,11 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
 
   const labelClass = 'mb-1 block text-[11px] uppercase tracking-wide text-slate-400'
   const inputClass =
-    'w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-violet-400/70 focus:ring-2 focus:ring-violet-400/30'
+    'w-full rounded-lg border border-white/10 bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30'
 
   if (editing) {
     return (
-      <li className="rounded-xl border border-violet-400/30 bg-violet-500/5 p-3">
+      <li className="rounded-xl border border-brand-500/40 bg-brand-500/5 p-3">
         <form onSubmit={handleSave} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
           <label className="sm:col-span-2">
             <span className={labelClass}>Producto</span>
@@ -130,7 +130,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
           <div className="flex gap-2 sm:col-span-2 lg:col-span-6">
             <button
               type="submit"
-              className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-400"
+              className="rounded-lg bg-accent-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-accent-500"
             >
               Guardar
             </button>
@@ -156,7 +156,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
       <div className="flex items-start gap-3">
         <span
           className={`mt-0.5 grid size-9 shrink-0 place-items-center rounded-lg text-xs font-bold ${
-            loss ? 'bg-rose-500/15 text-rose-300' : 'bg-emerald-500/15 text-emerald-300'
+            loss ? 'bg-danger-500/15 text-danger-300' : 'bg-accent-500/15 text-accent-300'
           }`}
           title={loss ? 'Vendido por debajo del costo' : 'Venta con ganancia'}
         >
@@ -175,7 +175,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
           {/* Per-unit breakdown, then the totals that matter. */}
           <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
             <span className="text-slate-500">
-              Me costó <span className="tabular-nums text-amber-300">{formatMoney(sale.cost)}</span>
+              Me costó <span className="tabular-nums text-sand-300">{formatMoney(sale.cost)}</span>
               <span className="text-slate-600"> c/u</span>
             </span>
             <span className="text-slate-500">
@@ -185,7 +185,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
             </span>
             <span className="text-slate-500">
               Total{' '}
-              <span className="tabular-nums text-violet-300">
+              <span className="tabular-nums text-brand-300">
                 {formatMoney(sale.total_revenue)}
               </span>
             </span>
@@ -195,13 +195,13 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
         <div className="shrink-0 text-right">
           <p
             className={`text-sm font-bold tabular-nums ${
-              loss ? 'text-rose-300' : 'text-emerald-300'
+              loss ? 'text-danger-300' : 'text-accent-300'
             }`}
           >
             {loss ? '−' : '+'}
             {formatMoney(Math.abs(profit))}
           </p>
-          <p className={`text-xs tabular-nums ${loss ? 'text-rose-400' : 'text-emerald-400'}`}>
+          <p className={`text-xs tabular-nums ${loss ? 'text-danger-400' : 'text-accent-400'}`}>
             {margin}% margen
           </p>
         </div>
@@ -228,7 +228,7 @@ export default function SaleRow({ sale, busy, onSave, onDelete }: Props) {
             onClick={() => void onDelete(sale.id)}
             disabled={busy}
             aria-label={`Eliminar venta de ${sale.name}`}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-500/15 hover:text-rose-300 disabled:opacity-50"
+            className="rounded-lg p-2 text-slate-400 transition hover:bg-danger-500/15 hover:text-danger-300 disabled:opacity-50"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-4">
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />

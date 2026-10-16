@@ -45,7 +45,7 @@ export default function TabNav({
         <span aria-hidden="true">📋</span>
         Lista de compras
         {pendingCount > 0 && (
-          <span className="rounded-full bg-sky-500/20 px-2 py-0.5 text-xs font-bold text-sky-300">
+          <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-xs font-bold text-brand-300">
             {pendingCount}
           </span>
         )}
@@ -63,14 +63,14 @@ export default function TabNav({
         <span aria-hidden="true">💰</span>
         Ventas
         {salesCount > 0 && (
-          <span className="rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-bold text-violet-300">
+          <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-xs font-bold text-brand-300">
             {salesCount}
           </span>
         )}
         {salesCount > 0 && (
           <span
             className={`hidden tabular-nums sm:inline ${
-              profit < 0 ? 'text-rose-300' : 'text-emerald-300'
+              profit < 0 ? 'text-danger-300' : 'text-accent-300'
             }`}
           >
             {profit < 0 ? '−' : '+'}

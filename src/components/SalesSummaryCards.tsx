@@ -17,9 +17,13 @@ function Card({
   accent: string
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1.5 text-2xl font-semibold tabular-nums ${accent}`}>{value}</p>
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur transition hover:border-brand-500/30">
+      <span
+        aria-hidden="true"
+        className={`absolute inset-y-0 left-0 w-1 bg-current opacity-70 ${accent}`}
+      />
+      <p className="text-[11px] font-semibold tracking-wide text-slate-400 uppercase">{label}</p>
+      <p className={`mt-1.5 text-2xl font-bold tabular-nums ${accent}`}>{value}</p>
       <p className="mt-1 text-xs text-slate-500">{hint}</p>
     </div>
   )
@@ -34,13 +38,13 @@ export default function SalesSummaryCards({ totals }: Props) {
         label="Vendido (ingresos)"
         value={formatMoney(totals.totalRevenue)}
         hint={`${totals.salesCount} ${totals.salesCount === 1 ? 'venta' : 'ventas'} · ${totals.unitsSold} pzas`}
-        accent="text-violet-300"
+        accent="text-brand-300"
       />
       <Card
         label="Me costó"
         value={formatMoney(totals.totalCost)}
         hint="Costo total de lo vendido"
-        accent="text-amber-300"
+        accent="text-sand-300"
       />
       <Card
         label={profitable ? 'Ganancia' : 'Pérdida'}
@@ -50,13 +54,13 @@ export default function SalesSummaryCards({ totals }: Props) {
             ? `Mejor: ${totals.bestSaleName} (${formatMoney(totals.bestSaleProfit)})`
             : 'Sin ventas registradas'
         }
-        accent={profitable ? 'text-emerald-300' : 'text-rose-300'}
+        accent={profitable ? 'text-accent-300' : 'text-danger-300'}
       />
       <Card
         label="Margen de ganancia"
         value={`${totals.marginPct}%`}
         hint="Ganancia ÷ ingresos"
-        accent={profitable ? 'text-emerald-300' : 'text-rose-300'}
+        accent={profitable ? 'text-accent-300' : 'text-danger-300'}
       />
     </div>
   )

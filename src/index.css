@@ -1,8 +1,51 @@
 @import 'tailwindcss';
 
+/*
+  Paleta de la marca.
+
+  `brand` es el naranja #ff661a y sus derivados, generados en OKLCH sobre el
+  mismo tono (~40°) para que toda la escala se sienta del mismo color en vez de
+  ser rojos o amarillos sueltos.
+
+  Los tonos "complementarios" que acompañan a la marca son:
+    - `accent` (teal, ~195°): complementario del naranja; se usa para las
+      ganancias y los estados "listo".
+    - `danger` (rojo, ~27°): pérdidas y acciones destructivas.
+    - `sand` (ámbar): el costo de las cosas, un paso más claro que la marca.
+  Sobre fondo oscuro el naranja saturado es el que manda; el resto solo acentúa.
+*/
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;
+
+  --color-brand-50: oklch(0.971 0.015 49);
+  --color-brand-100: oklch(0.938 0.036 48);
+  --color-brand-200: oklch(0.881 0.075 47);
+  --color-brand-300: oklch(0.808 0.124 46);
+  --color-brand-400: oklch(0.733 0.166 45);
+  --color-brand-500: #ff661a; /* marca */
+  --color-brand-600: oklch(0.598 0.196 42);
+  --color-brand-700: oklch(0.503 0.169 41);
+  --color-brand-800: oklch(0.428 0.139 41);
+  --color-brand-900: oklch(0.373 0.113 41);
+  --color-brand-950: oklch(0.243 0.072 42);
+
+  --color-accent-100: oklch(0.95 0.045 194);
+  --color-accent-200: oklch(0.905 0.082 195);
+  --color-accent-300: oklch(0.844 0.128 195);
+  --color-accent-400: oklch(0.777 0.14 193);
+  --color-accent-500: oklch(0.704 0.13 192);
+  --color-accent-600: oklch(0.6 0.11 194);
+
+  --color-sand-300: oklch(0.879 0.145 86);
+  --color-sand-400: oklch(0.828 0.16 80);
+  --color-sand-500: oklch(0.769 0.165 71);
+
+  --color-danger-100: oklch(0.941 0.035 20);
+  --color-danger-200: oklch(0.884 0.068 21);
+  --color-danger-300: oklch(0.808 0.114 22);
+  --color-danger-400: oklch(0.704 0.191 22);
+  --color-danger-500: oklch(0.637 0.237 25);
 }
 
 @layer base {
@@ -16,6 +59,17 @@
     min-height: 100dvh;
   }
 
+  /* Los controles nativos (fecha, checkbox, selección) siguen la marca. */
+  :root {
+    accent-color: var(--color-brand-500);
+    color-scheme: dark;
+  }
+
+  input[type='date']::-webkit-calendar-picker-indicator {
+    filter: invert(1) sepia(1) saturate(5) hue-rotate(340deg);
+    cursor: pointer;
+  }
+
   /* Keep number inputs clean across browsers. */
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button {
@@ -27,14 +81,49 @@
     -moz-appearance: textfield;
     appearance: textfield;
   }
+
+  ::selection {
+    background-color: var(--color-brand-500);
+    color: white;
+  }
 }
 
 @layer utilities {
-  /* Subtle animated backdrop used by the app shell. */
+  /* Fondo cálido: el brillo naranja de la marca arriba a la izquierda. */
   .app-backdrop {
     background:
-      radial-gradient(60rem 60rem at 12% -10%, rgb(56 189 248 / 0.16), transparent 60%),
-      radial-gradient(50rem 50rem at 100% 0%, rgb(168 85 247 / 0.16), transparent 55%),
-      radial-gradient(40rem 40rem at 50% 120%, rgb(16 185 129 / 0.12), transparent 60%);
+      radial-gradient(60rem 60rem at 8% -12%, rgb(255 102 26 / 0.18), transparent 62%),
+      radial-gradient(48rem 48rem at 102% -4%, rgb(255 160 26 / 0.12), transparent 58%),
+      radial-gradient(52rem 52rem at 50% 118%, rgb(46 178 178 / 0.1), transparent 62%);
+  }
+
+  /* Barra superior tipo "cinta" con el degradado de la marca. */
+  .brand-rule {
+    background: linear-gradient(
+      90deg,
+      var(--color-brand-500) 0%,
+      var(--color-sand-400) 45%,
+      var(--color-accent-400) 100%
+    );
+  }
+
+  /* Texto con el degradado de la marca. */
+  .brand-text {
+    background: linear-gradient(
+      92deg,
+      var(--color-brand-400) 0%,
+      var(--color-brand-500) 50%,
+      var(--color-sand-400) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Resplandor suave para el logo y elementos destacados. */
+  .brand-glow {
+    box-shadow:
+      0 0 0 1px rgb(255 102 26 / 0.35),
+      0 12px 40px -12px rgb(255 102 26 / 0.55);
   }
 }

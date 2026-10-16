@@ -87,7 +87,7 @@ export default function AddSaleForm({ onAdd }: Props) {
 
   const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-400'
   const inputClass =
-    'w-full rounded-xl border border-white/10 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-violet-400/70 focus:ring-2 focus:ring-violet-400/30'
+    'w-full rounded-xl border border-white/10 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30'
 
   return (
     <form
@@ -95,7 +95,7 @@ export default function AddSaleForm({ onAdd }: Props) {
       className="rounded-2xl border border-white/10 bg-white/5 p-4 shadow-xl shadow-slate-950/30 backdrop-blur sm:p-5"
     >
       <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-200">
-        <span className="grid size-6 place-items-center rounded-lg bg-violet-500/20 text-xs">＋</span>
+        <span className="grid size-6 place-items-center rounded-lg bg-brand-500/20 text-xs">＋</span>
         Registrar una venta
       </h2>
 
@@ -176,7 +176,7 @@ export default function AddSaleForm({ onAdd }: Props) {
             </div>
             <div className="flex items-center gap-1.5">
               <dt className="text-slate-500">Costo total</dt>
-              <dd className="font-semibold tabular-nums text-amber-300">
+              <dd className="font-semibold tabular-nums text-sand-300">
                 {formatMoney(preview.totalCost)}
               </dd>
             </div>
@@ -184,7 +184,7 @@ export default function AddSaleForm({ onAdd }: Props) {
               <dt className="text-slate-500">Ganancia</dt>
               <dd
                 className={`font-semibold tabular-nums ${
-                  preview.profit < 0 ? 'text-rose-300' : 'text-emerald-300'
+                  preview.profit < 0 ? 'text-danger-300' : 'text-accent-300'
                 }`}
               >
                 {formatMoney(preview.profit)}
@@ -194,7 +194,7 @@ export default function AddSaleForm({ onAdd }: Props) {
               <dt className="text-slate-500">Margen</dt>
               <dd
                 className={`font-semibold tabular-nums ${
-                  preview.margin < 0 ? 'text-rose-300' : 'text-emerald-300'
+                  preview.margin < 0 ? 'text-danger-300' : 'text-accent-300'
                 }`}
               >
                 {preview.margin}%
@@ -210,14 +210,14 @@ export default function AddSaleForm({ onAdd }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex h-[42px] shrink-0 items-center justify-center rounded-xl bg-violet-500 px-5 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-300 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-[42px] shrink-0 items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Guardando…' : 'Registrar venta'}
         </button>
       </div>
 
       {fieldError && (
-        <p role="alert" className="mt-3 text-sm text-amber-300">
+        <p role="alert" className="mt-3 text-sm text-sand-300">
           {fieldError}
         </p>
       )}

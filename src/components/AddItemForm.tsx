@@ -73,7 +73,7 @@ export default function AddItemForm({ onAdd }: Props) {
 
   const labelClass = 'mb-1.5 block text-xs font-medium uppercase tracking-wide text-slate-400'
   const inputClass =
-    'w-full rounded-xl border border-white/10 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-sky-400/70 focus:ring-2 focus:ring-sky-400/30'
+    'w-full rounded-xl border border-white/10 bg-slate-900/70 px-3.5 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-brand-500/70 focus:ring-2 focus:ring-brand-500/30'
 
   return (
     <form
@@ -131,7 +131,7 @@ export default function AddItemForm({ onAdd }: Props) {
             step="0.01"
             inputMode="decimal"
             placeholder="0.00"
-            className={`${inputClass} focus:border-amber-400/70 focus:ring-amber-400/30`}
+            className={`${inputClass} focus:border-sand-400/70 focus:ring-sand-400/30`}
           />
         </label>
       </div>
@@ -141,7 +141,7 @@ export default function AddItemForm({ onAdd }: Props) {
           <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
             <div className="flex items-center gap-1.5">
               <dt className="text-slate-500">Compra</dt>
-              <dd className="font-semibold tabular-nums text-amber-300">
+              <dd className="font-semibold tabular-nums text-sand-300">
                 {formatMoney(preview.spend)}
               </dd>
             </div>
@@ -155,7 +155,7 @@ export default function AddItemForm({ onAdd }: Props) {
               <dt className="text-slate-500">Ganancia si lo vendes</dt>
               <dd
                 className={`font-semibold tabular-nums ${
-                  preview.profit < 0 ? 'text-rose-300' : 'text-emerald-300'
+                  preview.profit < 0 ? 'text-danger-300' : 'text-accent-300'
                 }`}
               >
                 {formatMoney(preview.profit)}
@@ -171,14 +171,14 @@ export default function AddItemForm({ onAdd }: Props) {
         <button
           type="submit"
           disabled={submitting}
-          className="inline-flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-300 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-[42px] shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white shadow-lg shadow-brand-500/30 transition hover:bg-brand-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? 'Añadiendo…' : 'Añadir a la lista'}
         </button>
       </div>
 
       {fieldError && (
-        <p role="alert" className="mt-3 text-sm text-amber-300">
+        <p role="alert" className="mt-3 text-sm text-sand-300">
           {fieldError}
         </p>
       )}
